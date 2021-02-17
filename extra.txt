@@ -1,0 +1,69 @@
+serbia_data=pd.read_excel('nez-opendata-202012-20201225.xlsx',header=None)
+serbia_data2=pd.read_excel('nez-opendata-2019-20200125.xlsx',header=None)
+serbia_data3=pd.read_excel('nez-opendata-2018.xlsx',header=None)
+serbia_data4=pd.read_excel('nez-opendata-2017.xlsx',header=None)
+serbia_data5=pd.read_excel('nez-opendata-2016.xlsx',header=None)
+serbia_data6=pd.read_excel('nez-opendata-2015.xlsx',header=None)
+serbia_data=serbia_data.append([serbia_data2,serbia_data3,serbia_data4,serbia_data5,serbia_data6])
+serbia_data.reindex()
+serbia_data
+
+city_data=serbia_data.loc[serbia_data[2] == 'NIŠ']
+
+serb_coords = city_data[[5,4]]
+
+
+f = folium.Figure(width=1300, height=800)
+map_ = folium.Map(location=[43.35, 21.9], zoom_start=12,control_scale=True,
+zoom_control=False).add_to(f)
+
+loc_list = serb_coords.values.tolist()
+feature_group = folium.FeatureGroup("Locations")
+for point in range(1000):
+    folium.Marker([loc_list[point][0],loc_list[point][1]]).add_to(map_)
+
+map_
+
+serb_coords_mat = serb_coords.values
+
+kms_per_radian = 6371.0088
+epsilon = .02 / kms_per_radian
+db = DBSCAN(eps=epsilon, min_samples=10, metric='haversine',n_jobs=-1).fit(np.radians(serb_coords_mat))
+
+cluster_labels = db.labels_
+num_clusters = len(set(cluster_labels))
+clusters = pd.Series([serb_coords_mat[cluster_labels == n] for n in range(num_clusters)])
+print('Number of clusters: {}'.format(num_clusters))
+
+colors = [
+    'red',
+    'blue',
+    'gray',
+    'darkred',
+    'lightred',
+    'orange',
+    'beige',
+    'green',
+    'darkgreen',
+    'lightgreen',
+    'darkblue',
+    'lightblue',
+    'purple',
+    'darkpurple',
+    'pink',
+    'cadetblue',
+    'lightgray',
+    'black'
+]
+
+f = folium.Figure(width=1300, height=800)
+map_ = folium.Map(location=[43.325, 21.91], zoom_start=14,control_scale=True,
+zoom_control=False).add_to(f)
+
+
+#feature_group = folium.FeatureGroup("Locations")
+for index in range(num_clusters):
+    for point in (clusters[index].tolist()):
+        folium.Marker([point[0],point[1]],icon=folium.Icon(color=colors[index%len(colors)])).add_to(map_)
+
+map_
