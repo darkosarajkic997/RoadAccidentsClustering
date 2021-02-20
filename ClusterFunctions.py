@@ -4,6 +4,8 @@ import seaborn as sns
 import folium
 import pandas as pd
 import numpy as np
+from scipy.cluster.hierarchy import dendrogram
+from sklearn.decomposition import PCA
 
 point_colors = [
     'red',
@@ -303,3 +305,43 @@ def draw_less_frequent_anomalies_clusters(dataframe, anomalies_dataframe, attrib
     return map_
 
 
+def plot_dendrogram(model, **kwargs):
+    plt.rcParams["figure.figsize"] = (12,12)
+    counts = np.zeros(model.children_.shape[0])
+    n_samples = len(model.labels_)
+    for i, merge in enumerate(model.children_):
+        current_count = 0
+        for child_idx in merge:
+            if child_idx < n_samples:
+                current_count += 1
+            else:
+                current_count += counts[child_idx - n_samples]
+                counts[i] = current_count
+
+    linkage_matrix = np.column_stack([model.children_, model.distances_,counts]).astype(float)
+
+    dendrogram(linkage_matrix, **kwargs)
+
+def plot_3D(data,labels):
+    pca_ = PCA(n_components=3)
+    X = pca_.fit_transform(data)
+
+    fig = plt.figure(figsize=(20,20))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(X[:,0],X[:,1],X[:,2], c=labels/5, cmap='viridis',edgecolor='k', s=100, alpha = 0.8)
+
+
+    ax.set_title("PCA directions")
+    ax.set_xlabel("Feature 1")
+    ax.set_ylabel("Feature 2")
+    ax.set_zlabel("Feature 3")
+    ax.dist = 10
+    plt.autoscale(enable=True, axis='x', tight=True)    
+
+    plt.show()
+
+def plot_feature_importances(importances,columns):
+    plt.figure(figsize=(20,15))
+    plt.barh([x for x in range(len(importances))], importances)
+    plt.yticks(range(0,len(columns)-1),columns)
+    plt.show()
