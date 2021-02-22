@@ -306,7 +306,7 @@ def draw_less_frequent_anomalies_clusters(dataframe, anomalies_dataframe, attrib
 
 
 def plot_dendrogram(model, **kwargs):
-    plt.rcParams["figure.figsize"] = (12,12)
+    plt.rcParams["figure.figsize"] = (20,12)
     counts = np.zeros(model.children_.shape[0])
     n_samples = len(model.labels_)
     for i, merge in enumerate(model.children_):
