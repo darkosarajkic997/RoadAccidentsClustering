@@ -151,10 +151,11 @@ def draw_clusters(dataframe, lat=48.750, long=2.25, width=1300, height=800, mag=
     f = folium.Figure(width=1300, height=800)
     map_ = folium.Map(location=[lat, long], zoom_start=mag,control_scale=True, zoom_control=False).add_to(f)
     cluster_indexes = list(dataframe['cluster'].unique())
-    cluster_indexes.remove(-1)
+    if(-1 in cluster_indexes):
+        cluster_indexes.remove(-1)
 
     for index in cluster_indexes:
-        (dataframe.iloc[np.where((dataframe['cluster'] == index))]).apply(lambda row: folium.Marker([row['lat'], row['long']], icon=folium.Icon(color=point_colors[index % len(point_colors)])).add_to(map_), axis=1)
+        (dataframe.iloc[np.where((dataframe['cluster'] == index))]).apply(lambda row: folium.Marker([row['lat'], row['long']], icon=folium.Icon(color=point_colors[index % len(point_colors)]),tooltip=folium.Tooltip(f'Cluster no: {index}')).add_to(map_), axis=1)
 
     return map_
 
@@ -232,7 +233,7 @@ def analyse_attributes_values_in_clusters(dataframe, attribute, threshold=0.18):
         anomalies_data[column] = freq_df[column].apply(lambda x: filter(x, total_freq_dict[column], threshold))
 
     number_of_rows = len(unique_attribute_values)
-    fig, axs = plt.subplots(number_of_rows, figsize=(25, number_of_rows*5))
+    fig, axs = plt.subplots(number_of_rows, figsize=(25, number_of_rows*4))
     plt.subplots_adjust(hspace=0.4)
     fig.suptitle(attribute, fontsize=26)
 
